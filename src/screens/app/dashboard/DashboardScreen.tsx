@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ActivityIndicator, ScrollView } from "react-native";
+import { View, ActivityIndicator, ScrollView, StyleSheet } from "react-native";
 import { useAuth } from "../../../contexts/AuthContext";
 import { getRecentRegistros, getMetas } from "../../../services/userService";
+
+import { EcoText } from "../../../components/EcoText";
+import { EcoCard } from "../../../components/EcoCard";
+import { theme } from "../../../theme/theme";
+
+import Feather from "@expo/vector-icons/Feather";
 
 export default function DashboardScreen() {
   const { user, loading } = useAuth();
@@ -32,100 +38,99 @@ export default function DashboardScreen() {
 
   if (loading || loadingDash || !user) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="#16a34a" />
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );
   }
 
   return (
-    <ScrollView
-      contentContainerStyle={{
-        padding: 20,
-        backgroundColor: "#f3f4f6",
-        minHeight: "100%",
-      }}
-    >
-
-      <Text
-        style={{
-          fontSize: 28,
-          fontWeight: "bold",
-          color: "#14532d",
-          marginBottom: 6,
-        }}
-      >
+    <ScrollView contentContainerStyle={styles.container}>
+      {/* TÍTULO */}
+      <EcoText type="title" style={styles.title}>
         Bem-vindo, {user.nome}
-      </Text>
+      </EcoText>
 
-      <Text style={{ fontSize: 16, marginBottom: 20, color: "#374151" }}>
+      <EcoText type="body" style={styles.empresa}>
         Empresa: {user.empresa?.nome ?? "Não informado"}
-      </Text>
+      </EcoText>
 
-      <Text
-        style={{
-          fontSize: 20,
-          fontWeight: "700",
-          marginBottom: 10,
-          color: "#166534",
-        }}
-      >
+      {/* REGISTROS RECENTES */}
+      <EcoText type="subtitle" style={styles.sectionTitle}>
         Registros Recentes
-      </Text>
+      </EcoText>
 
       {recentes.length === 0 && (
-        <Text style={{ color: "#555" }}>Nenhum registro ainda.</Text>
+        <EcoText type="body" style={styles.empty}>
+          Nenhum registro ainda.
+        </EcoText>
       )}
 
       {recentes.map((reg) => (
-        <View
+        <EcoCard
           key={reg.id}
-          style={{
-            backgroundColor: "#dcfce7",
-            padding: 15,
-            borderRadius: 12,
-            marginBottom: 12,
-          }}
-        >
-          <Text style={{ fontWeight: "bold", color: "#065f46" }}>
-            Tipo: {reg.tipo}
-          </Text>
-          <Text style={{ color: "#065f46" }}>Valor: {reg.valor}</Text>
-        </View>
+          icon={
+            <Feather name="activity" size={22} color={theme.colors.primary} />
+          }
+          title={`Tipo: ${reg.tipo}`}
+          description={`Valor: ${reg.valor}`}
+          onPress={() => {}}
+        />
       ))}
 
-      <Text
-        style={{
-          fontSize: 20,
-          fontWeight: "700",
-          marginTop: 20,
-          marginBottom: 10,
-          color: "#1e3a8a",
-        }}
-      >
+      {/* METAS */}
+      <EcoText type="subtitle" style={styles.sectionTitle}>
         Metas da Empresa
-      </Text>
+      </EcoText>
 
       {metas.length === 0 && (
-        <Text style={{ color: "#555" }}>Nenhuma meta encontrada.</Text>
+        <EcoText type="body" style={styles.empty}>
+          Nenhuma meta encontrada.
+        </EcoText>
       )}
 
       {metas.map((meta) => (
-        <View
+        <EcoCard
           key={meta.id}
-          style={{
-            backgroundColor: "#dbeafe",
-            padding: 15,
-            borderRadius: 12,
-            marginBottom: 12,
-          }}
-        >
-          <Text style={{ fontWeight: "bold", color: "#1e40af" }}>
-            {meta.nome}
-          </Text>
-          <Text style={{ color: "#1e40af" }}>Status: {meta.status}</Text>
-        </View>
+          icon={<Feather name="flag" size={22} color={theme.colors.primary} />}
+          title={meta.nome}
+          description={`Status: ${meta.status}`}
+          onPress={() => {}}
+        />
       ))}
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  container: {
+    padding: theme.spacing.lg,
+    backgroundColor: theme.colors.background,
+  },
+
+  title: {
+    textAlign: "left",
+    marginBottom: theme.spacing.xs,
+  },
+
+  empresa: {
+    marginBottom: theme.spacing.lg,
+    color: theme.colors.textSecondary,
+  },
+
+  sectionTitle: {
+    marginBottom: theme.spacing.sm,
+    color: theme.colors.primaryDark,
+  },
+
+  empty: {
+    marginBottom: theme.spacing.md,
+    color: theme.colors.textMuted,
+  },
+});

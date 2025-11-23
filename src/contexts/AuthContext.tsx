@@ -51,7 +51,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         setUser(respUser.data);
         setToken(storedToken);
-
       } catch (err) {
         console.log("Token inválido, limpando sessão.");
         await AsyncStorage.removeItem("@token");
@@ -72,7 +71,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log("LOGIN OK", resp.token);
   }
 
-  async function register(nome: string, email: string, senha: string, empresaId: number) {
+  async function register(
+    nome: string,
+    email: string,
+    senha: string,
+    empresaId: number
+  ) {
     const resp = await registerRequest(nome, email, senha, empresaId);
     await saveSession(resp.token);
     console.log("REGISTER OK", resp.token);
@@ -81,6 +85,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function logout() {
     setUser(null);
     setToken(null);
+
+    delete api.defaults.headers.common["Authorization"];
+
     await AsyncStorage.removeItem("@token");
     await AsyncStorage.removeItem("@user");
   }
@@ -93,7 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loading,
         login,
         register,
-        logout
+        logout,
       }}
     >
       {children}

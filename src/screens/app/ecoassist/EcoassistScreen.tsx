@@ -1,14 +1,18 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
   ScrollView,
+  ActivityIndicator,
+  StyleSheet,
+  TextInput,
 } from "react-native";
+
+import { EcoText } from "../../../components/EcoText";
+import { EcoButton } from "../../../components/EcoButton";
+import { EcoCard } from "../../../components/EcoCard";
+
 import { api } from "../../../services/api";
+import { theme } from "../../../theme/theme";
 
 export default function EcoassistScreen() {
   const [question, setQuestion] = useState("");
@@ -22,11 +26,11 @@ export default function EcoassistScreen() {
       setLoading(true);
       setAnswer("");
 
-      const response = await api.get("/api/ai/perguntar", {
+      const resp = await api.get("/api/ai/perguntar", {
         params: { q: question },
       });
 
-      setAnswer(response.data);
+      setAnswer(resp.data);
     } catch (e) {
       console.log(e);
       setAnswer("Erro ao obter resposta da IA.");
@@ -36,77 +40,70 @@ export default function EcoassistScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>EcoAssist 🌱</Text>
-      <Text style={styles.subtitle}>
+    <ScrollView
+      style={{ flex: 1 }}
+      contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="handled"
+    >
+      <EcoText type="title" style={styles.title}>
+        EcoAssist 🌱
+      </EcoText>
+
+      <EcoText type="body" style={styles.subtitle}>
         Pergunte algo sobre sustentabilidade, consumo consciente, economia de
-        energia, carbono… e receba uma dica personalizada!
-      </Text>
+        energia e receba uma dica personalizada.
+      </EcoText>
 
       <TextInput
         style={styles.input}
         placeholder="Ex: Como posso economizar energia no escritório?"
+        placeholderTextColor={theme.colors.textMuted}
         value={question}
         onChangeText={setQuestion}
       />
 
-      <TouchableOpacity
-        style={styles.button}
+      <EcoButton
+        title="Perguntar"
         onPress={perguntarIA}
         disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#FFF" />
-        ) : (
-          <Text style={styles.buttonText}>Perguntar</Text>
-        )}
-      </TouchableOpacity>
+        style={{ marginTop: theme.spacing.sm }}
+      />
 
-      <ScrollView style={styles.answerBox}>
-        {!!answer && <Text style={styles.answer}>{answer}</Text>}
-      </ScrollView>
-    </View>
+      {loading && (
+        <ActivityIndicator
+          size="large"
+          color={theme.colors.primary}
+          style={{ marginTop: theme.spacing.lg }}
+        />
+      )}
+
+      {!!answer && (
+        <EcoCard title="Resposta da IA" description={answer} icon={undefined} />
+      )}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    flex: 1,
+    padding: theme.spacing.lg,
+    paddingBottom: 40,
   },
   title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 10,
+    marginBottom: theme.spacing.sm,
+    textAlign: "center",
   },
   subtitle: {
-    fontSize: 15,
-    marginBottom: 20,
-    opacity: 0.7,
+    opacity: 0.8,
+    marginBottom: theme.spacing.lg,
+    textAlign: "center",
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
-  },
-  button: {
-    backgroundColor: "#16a34a",
-    padding: 14,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  buttonText: {
-    color: "#FFF",
-    fontWeight: "bold",
-  },
-  answerBox: {
-    marginTop: 20,
-    padding: 10,
-  },
-  answer: {
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.card,
+    padding: theme.spacing.md,
+    borderRadius: theme.radius.md,
     fontSize: 16,
-    lineHeight: 22,
   },
 });

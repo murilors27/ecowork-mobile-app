@@ -1,21 +1,27 @@
 import React, { useEffect, useState } from "react";
 import {
   View,
-  Text,
-  StyleSheet,
+  ScrollView,
   TextInput,
-  TouchableOpacity,
   ActivityIndicator,
   Alert,
-  ScrollView,
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Keyboard,
   Platform,
+  StyleSheet,
 } from "react-native";
+
 import { Picker } from "@react-native-picker/picker";
+
 import { api } from "../../../services/api";
 import { useAuth } from "../../../contexts/AuthContext";
+
+import { EcoText } from "../../../components/EcoText";
+import { EcoButton } from "../../../components/EcoButton";
+import { theme } from "../../../theme/theme";
+
+import { Feather } from "@expo/vector-icons";
 
 const LABELS_BY_TIPO: Record<string, string> = {
   ENERGIA: "Consumo em kWh",
@@ -37,14 +43,13 @@ export default function EditarRegistroScreen({ route, navigation }: any) {
 
   async function carregarRegistro() {
     try {
-      const response = await api.get(`/api/consumos/${id}`);
-      const reg = response.data;
+      const resp = await api.get(`/api/consumos/${id}`);
+      const reg = resp.data;
 
       setTipo(reg.tipo);
       setValor(String(reg.valor));
       setSensorId(reg.sensor?.id ?? 0);
-    } catch (e: any) {
-      console.log("ERRO AO CARREGAR REGISTRO:", e.response?.data);
+    } catch (err: any) {
       Alert.alert("Erro", "Não foi possível carregar o registro.");
       navigation.goBack();
     }
@@ -52,14 +57,13 @@ export default function EditarRegistroScreen({ route, navigation }: any) {
 
   async function carregarSensores() {
     try {
-      const response = await api.get("/api/sensores");
-      setSensores(response.data);
+      const resp = await api.get("/api/sensores");
+      setSensores(resp.data);
 
-      if (response.data.length > 0 && sensorId === 0) {
-        setSensorId(response.data[0].id);
+      if (resp.data.length > 0 && sensorId === 0) {
+        setSensorId(resp.data[0].id);
       }
-    } catch (e: any) {
-      console.log(e.response?.data);
+    } catch (err: any) {
       Alert.alert("Erro", "Não foi possível carregar os sensores.");
     }
   }
@@ -88,7 +92,7 @@ export default function EditarRegistroScreen({ route, navigation }: any) {
     const numero = parseValor(valor);
 
     if (isNaN(numero) || numero <= 0) {
-      return Alert.alert("Atenção", "Informe um valor numérico válido maior que zero.");
+      return Alert.alert("Atenção", "Informe um valor válido maior que zero.");
     }
 
     try {
@@ -102,17 +106,14 @@ export default function EditarRegistroScreen({ route, navigation }: any) {
         metaId: null,
       };
 
-      console.log("PAYLOAD ATUALIZAR ===>", payload);
-
       await api.put(`/api/consumos/${id}`, payload);
 
-      Alert.alert("Sucesso", "Registro atualizado com sucesso!");
+      Alert.alert("Sucesso", "Registro atualizado!");
       navigation.goBack();
-    } catch (e: any) {
-      console.log("ERRO AO ATUALIZAR:", e.response?.data);
+    } catch (err: any) {
       Alert.alert(
         "Erro",
-        e.response?.data?.message || "Não foi possível atualizar o registro."
+        err?.response?.data?.message || "Erro ao atualizar o registro."
       );
     } finally {
       setSaving(false);
@@ -122,7 +123,7 @@ export default function EditarRegistroScreen({ route, navigation }: any) {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#16a34a" />
+        <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );
   }
@@ -133,57 +134,70 @@ export default function EditarRegistroScreen({ route, navigation }: any) {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-          <Text style={styles.title}>Editar Registro</Text>
-
-          <Text style={styles.label}>Tipo de Consumo</Text>
-          <Picker
-            selectedValue={tipo}
-            onValueChange={(itemValue: string) => setTipo(itemValue)}
-            style={styles.picker}
+        <ScrollView contentContainerStyle={styles.container}>
+          {/* TÍTULO */}
+          <EcoText
+            type="title"
+            style={{ textAlign: "center", marginBottom: theme.spacing.md }}
           >
-            <Picker.Item label="Energia" value="ENERGIA" />
-            <Picker.Item label="Papel" value="PAPEL" />
-            <Picker.Item label="Transporte" value="TRANSPORTE" />
-          </Picker>
+            Editar Registro
+          </EcoText>
 
-          <Text style={styles.label}>{LABELS_BY_TIPO[tipo]}</Text>
+          {/* TIPO */}
+          <EcoText type="label" style={styles.label}>
+            Tipo de Consumo
+          </EcoText>
+          <View style={styles.inputContainer}>
+            <Picker
+              selectedValue={tipo}
+              onValueChange={(v: string) => setTipo(v)}
+            >
+              <Picker.Item label="Energia" value="ENERGIA" />
+              <Picker.Item label="Papel" value="PAPEL" />
+              <Picker.Item label="Transporte" value="TRANSPORTE" />
+            </Picker>
+          </View>
+
+          {/* VALOR */}
+          <EcoText type="label" style={styles.label}>
+            {LABELS_BY_TIPO[tipo]}
+          </EcoText>
           <TextInput
             style={styles.input}
             placeholder="Ex: 10 ou 12,5"
-            keyboardType="decimal-pad"
             value={valor}
+            keyboardType="decimal-pad"
             onChangeText={setValor}
-            returnKeyType="done"
-            onSubmitEditing={Keyboard.dismiss}
           />
 
-          <Text style={styles.label}>Sensor</Text>
-          <Picker
-            selectedValue={sensorId}
-            onValueChange={(itemValue: number) => setSensorId(itemValue)}
-            style={styles.picker}
-          >
-            {sensores.map((s) => (
-              <Picker.Item
-                key={s.id}
-                label={`${s.tipo_sensor} - ${s.localizacao}`}
-                value={s.id}
-              />
-            ))}
-          </Picker>
+          {/* SENSOR */}
+          <EcoText type="label" style={styles.label}>
+            Sensor
+          </EcoText>
+          <View style={styles.inputContainer}>
+            <Picker
+              selectedValue={sensorId}
+              onValueChange={(v: number) => setSensorId(v)}
+            >
+              {sensores.map((s) => (
+                <Picker.Item
+                  key={s.id}
+                  label={`${s.tipo_sensor} - ${s.localizacao}`}
+                  value={s.id}
+                />
+              ))}
+            </Picker>
+          </View>
 
-          <TouchableOpacity
-            style={styles.button}
+          {/* BOTÃO */}
+          <EcoButton
+            title="Salvar Alterações"
+            icon={<Feather name="save" size={20} color="#FFF" />}
+            color={theme.colors.primary}
+            loading={saving}
+            style={{ marginTop: theme.spacing.lg }}
             onPress={atualizar}
-            disabled={saving}
-          >
-            {saving ? (
-              <ActivityIndicator color="#FFF" />
-            ) : (
-              <Text style={styles.buttonText}>Salvar Alterações</Text>
-            )}
-          </TouchableOpacity>
+          />
         </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
@@ -192,44 +206,29 @@ export default function EditarRegistroScreen({ route, navigation }: any) {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
-    paddingBottom: 40,
+    padding: theme.spacing.lg,
+    paddingBottom: 60,
   },
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
-  title: {
-    fontSize: 26,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
   label: {
-    marginTop: 12,
-    marginBottom: 4,
-    fontWeight: "600",
+    marginBottom: theme.spacing.xs,
+  },
+  inputContainer: {
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radius.md,
+    marginBottom: theme.spacing.md,
   },
   input: {
     borderWidth: 1,
-    borderColor: "#DDD",
-    borderRadius: 8,
-    padding: 10,
-  },
-  picker: {
-    backgroundColor: "#FFF",
-    borderRadius: 8,
-  },
-  button: {
-    marginTop: 30,
-    backgroundColor: "#16a34a",
-    padding: 14,
-    borderRadius: 10,
-  },
-  buttonText: {
-    color: "#FFF",
-    textAlign: "center",
-    fontWeight: "bold",
-    fontSize: 16,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radius.md,
+    padding: theme.spacing.md,
+    backgroundColor: theme.colors.surface,
   },
 });

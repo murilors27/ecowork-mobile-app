@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
 import { useAuth } from "../../contexts/AuthContext";
 
 export default function RegisterScreen({ navigation }: any) {
@@ -20,6 +28,7 @@ export default function RegisterScreen({ navigation }: any) {
     try {
       setLoading(true);
       await register(nome, email, senha, Number(empresaId));
+
     } catch (error: any) {
       console.log(error.response?.data);
 
@@ -73,7 +82,11 @@ export default function RegisterScreen({ navigation }: any) {
         onChangeText={setEmpresaId}
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleRegister}>
+      <TouchableOpacity
+        style={[styles.button, loading && { opacity: 0.7 }]}
+        onPress={handleRegister}
+        disabled={loading}
+      >
         {loading ? (
           <ActivityIndicator color="#FFF" />
         ) : (

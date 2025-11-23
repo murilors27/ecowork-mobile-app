@@ -1,10 +1,23 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ActivityIndicator, ScrollView, StyleSheet } from "react-native";
+import {
+  View,
+  ActivityIndicator,
+  ScrollView,
+  Alert,
+  StyleSheet,
+} from "react-native";
+
 import { useAuth } from "../../../contexts/AuthContext";
 import { getRankingGlobal } from "../../../services/rankingService";
 
+import { EcoText } from "../../../components/EcoText";
+import { EcoCard } from "../../../components/EcoCard";
+import { theme } from "../../../theme/theme";
+import { Feather } from "@expo/vector-icons";
+
 export default function RankingScreen() {
-  const { user, loading } = useAuth();
+  const { loading } = useAuth();
+
   const [ranking, setRanking] = useState<any[]>([]);
   const [loadingRank, setLoadingRank] = useState(true);
 
@@ -13,49 +26,76 @@ export default function RankingScreen() {
       try {
         const lista = await getRankingGlobal();
         setRanking(lista);
-      } catch (e: any) {
-        console.log("Erro ao carregar ranking:", e?.response?.data);
+      } catch (err: any) {
+        Alert.alert(
+          "Erro",
+          err?.response?.data?.message ||
+            "Não foi possível carregar o ranking global."
+        );
       } finally {
         setLoadingRank(false);
       }
     }
 
-    if (user) carregar();
-  }, [user]);
+    carregar();
+  }, []);
 
   if (loading || loadingRank) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#16a34a" />
+        <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );
   }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.titulo}>🏆 Ranking Global</Text>
+      {/* TÍTULO */}
+      <EcoText
+        type="title"
+        style={{ textAlign: "center", marginBottom: theme.spacing.lg }}
+      >
+        🏆 Ranking Global
+      </EcoText>
 
-      {ranking.map((item, index) => {
-        const medalha =
-          item.posicao === 1
-            ? "🥇"
-            : item.posicao === 2
-            ? "🥈"
-            : item.posicao === 3
-            ? "🥉"
-            : `#${item.posicao}`;
+      {/* LISTA */}
+      {ranking.length === 0 && (
+        <EcoText type="body" style={{ textAlign: "center", marginTop: 20 }}>
+          Nenhum participante no ranking ainda.
+        </EcoText>
+      )}
+
+      {ranking.map((item) => {
+        const icon =
+          item.posicao === 1 ? (
+            <Feather name="award" size={28} color={theme.colors.primary} />
+          ) : item.posicao === 2 ? (
+            <Feather name="award" size={28} color={theme.colors.textMuted} />
+          ) : item.posicao === 3 ? (
+            <Feather name="award" size={28} color={theme.colors.primaryDark} />
+          ) : (
+            <Feather name="user" size={26} color={theme.colors.textSecondary} />
+          );
 
         return (
-          <View key={item.usuarioId} style={styles.card}>
-            <Text style={styles.posicao}>{medalha}</Text>
-
-            <View style={{ flex: 1 }}>
-              <Text style={styles.nome}>{item.nome}</Text>
-              <Text style={styles.empresa}>{item.empresa}</Text>
-            </View>
-
-            <Text style={styles.pontos}>{item.pontosTotais} pts</Text>
-          </View>
+          <EcoCard
+            key={item.usuarioId}
+            icon={icon}
+            title={item.nome}
+            description={item.empresa}
+          >
+            {/* PONTOS À DIREITA */}
+            <EcoText
+              type="subtitle"
+              style={{
+                textAlign: "right",
+                color: theme.colors.primary,
+                fontWeight: "700",
+              }}
+            >
+              {item.pontosTotais} pts
+            </EcoText>
+          </EcoCard>
         );
       })}
     </ScrollView>
@@ -64,44 +104,12 @@ export default function RankingScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    padding: theme.spacing.lg,
     paddingBottom: 40,
   },
   center: {
     flex: 1,
+    alignItems: "center",
     justifyContent: "center",
-    alignItems: "center",
-  },
-  titulo: {
-    fontSize: 26,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
-  card: {
-    flexDirection: "row",
-    padding: 16,
-    marginBottom: 14,
-    borderRadius: 12,
-    backgroundColor: "#f3f4f6",
-    alignItems: "center",
-    elevation: 2,
-  },
-  posicao: {
-    fontSize: 28,
-    width: 50,
-    textAlign: "center",
-  },
-  nome: {
-    fontWeight: "600",
-    fontSize: 16,
-  },
-  empresa: {
-    fontSize: 13,
-    color: "#6b7280",
-  },
-  pontos: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#16a34a",
   },
 });

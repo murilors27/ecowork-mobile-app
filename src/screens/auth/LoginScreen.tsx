@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
 import { useAuth } from "../../contexts/AuthContext";
 
 export default function LoginScreen({ navigation }: any) {
@@ -10,31 +18,31 @@ export default function LoginScreen({ navigation }: any) {
   const [loading, setLoading] = useState(false);
 
   async function handleLogin() {
-  if (!email || !senha) {
-    Alert.alert("Erro", "Preencha todos os campos.");
-    return;
+    if (!email || !senha) {
+      Alert.alert("Erro", "Preencha todos os campos.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await login(email, senha);
+
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "AppTabs" }],
+      });
+    } catch (error: any) {
+      console.log(error.response?.data);
+
+      const message =
+        error.response?.data?.message ||
+        "Erro ao fazer login. Tente novamente.";
+
+      Alert.alert("Falha ao entrar", message);
+    } finally {
+      setLoading(false);
+    }
   }
-
-  try {
-    setLoading(true);
-    await login(email, senha);
-    navigation.reset({
-      index: 0,
-      routes: [{ name: "AppTabs" }],
-    });
-
-  } catch (error: any) {
-    console.log(error.response?.data);
-
-    const message =
-      error.response?.data?.message ||
-      "Erro ao fazer login. Tente novamente.";
-
-    Alert.alert("Falha ao entrar", message);
-  } finally {
-    setLoading(false);
-  }
-}
 
   return (
     <View style={styles.container}>
@@ -59,7 +67,11 @@ export default function LoginScreen({ navigation }: any) {
         onChangeText={setSenha}
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
+      <TouchableOpacity
+        style={[styles.button, loading && { opacity: 0.7 }]}
+        onPress={handleLogin}
+        disabled={loading}
+      >
         {loading ? (
           <ActivityIndicator color="#FFF" />
         ) : (

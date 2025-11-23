@@ -1,20 +1,20 @@
 import React, { useCallback, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  ActivityIndicator,
-  TouchableOpacity,
-  Alert,
-} from "react-native";
-import { api } from "../../../services/api";
+import { View, ActivityIndicator, FlatList, Alert, StyleSheet } from "react-native";
 import { useAuth } from "../../../contexts/AuthContext";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 
-export default function RegistrosScreen({ navigation }: any) {
+import { api } from "../../../services/api";
+
+import { EcoText } from "../../../components/EcoText";
+import { EcoCard } from "../../../components/EcoCard";
+import { EcoButton } from "../../../components/EcoButton";
+import { theme } from "../../../theme/theme";
+
+import { Feather } from "@expo/vector-icons";
+
+export default function RegistrosScreen() {
+  const navigation = useNavigation<any>();
   const { user } = useAuth();
-  console.log("USER ATUAL NO REGISTROS ===>", user);
 
   const [registros, setRegistros] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,15 +25,13 @@ export default function RegistrosScreen({ navigation }: any) {
     try {
       setLoading(true);
 
-      const response = await api.get(`/api/consumos/usuario/${user.id}`);
-
-      setRegistros(response.data.content);
-    } catch (error: any) {
-      console.log("Erro ao carregar:", error.response?.data);
+      const resp = await api.get(`/api/consumos/usuario/${user.id}`);
+      setRegistros(resp.data?.content ?? []);
+    } catch (err: any) {
+      console.log("Erro ao carregar:", err?.response?.data);
       Alert.alert(
         "Erro",
-        error.response?.data?.message ||
-          "Não foi possível carregar os registros."
+        err?.response?.data?.message || "Não foi possível carregar os registros."
       );
     } finally {
       setLoading(false);
@@ -48,7 +46,7 @@ export default function RegistrosScreen({ navigation }: any) {
 
   function confirmarDelete(id: number) {
     Alert.alert(
-      "Confirmar exclusão",
+      "Excluir registro",
       "Deseja realmente excluir este registro?",
       [
         { text: "Cancelar", style: "cancel" },
@@ -66,51 +64,56 @@ export default function RegistrosScreen({ navigation }: any) {
       await api.delete(`/api/consumos/${id}`);
       Alert.alert("Sucesso", "Registro excluído!");
       carregarRegistros();
-    } catch (error: any) {
-      console.log(error.response?.data);
+    } catch (err: any) {
       Alert.alert(
         "Erro",
-        error.response?.data?.message || "Erro ao deletar registro."
+        err?.response?.data?.message || "Erro ao excluir registro."
       );
     }
   }
 
   function renderItem({ item }: any) {
     return (
-      <View style={styles.card}>
-        <Text style={styles.tipo}>{item.tipo}</Text>
-        <Text style={styles.valor}>Valor: {item.valor}</Text>
-        <Text>ID: {item.id}</Text>
-
-        <View style={styles.cardButtons}>
-          <TouchableOpacity
-            style={styles.editButton}
+      <EcoCard
+        icon={<Feather name="file-text" size={24} color={theme.colors.primary} />}
+        title={`Tipo: ${item.tipo}`}
+        description={`Valor: ${item.valor}`}
+        onPress={() =>
+          navigation.navigate("EditarRegistro", { id: item.id })
+        }
+      >
+        {/* Botões dentro do card */}
+        <View style={styles.row}>
+          <EcoButton
+            title="Editar"
+            color={theme.colors.primary}
+            icon={<Feather name="edit" size={18} color="#FFF" />}
             onPress={() =>
               navigation.navigate("EditarRegistro", { id: item.id })
             }
-          >
-            <Text style={styles.buttonText}>Editar</Text>
-          </TouchableOpacity>
+          />
 
-          <TouchableOpacity
-            style={styles.deleteButton}
+          <EcoButton
+            title="Excluir"
+            color={theme.colors.danger}
+            icon={<Feather name="trash" size={18} color="#FFF" />}
             onPress={() => confirmarDelete(item.id)}
-          >
-            <Text style={styles.buttonText}>Excluir</Text>
-          </TouchableOpacity>
+          />
         </View>
-      </View>
+      </EcoCard>
     );
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Registros</Text>
+      <EcoText type="title" style={styles.title}>
+        Registros
+      </EcoText>
 
       {loading ? (
         <ActivityIndicator
           size="large"
-          color="#16a34a"
+          color={theme.colors.primary}
           style={{ marginTop: 20 }}
         />
       ) : (
@@ -118,21 +121,23 @@ export default function RegistrosScreen({ navigation }: any) {
           data={registros}
           keyExtractor={(item) => String(item.id)}
           renderItem={renderItem}
-          contentContainerStyle={{ paddingBottom: 20 }}
+          contentContainerStyle={{ paddingBottom: 32 }}
           ListEmptyComponent={
-            <Text style={{ textAlign: "center", marginTop: 20 }}>
+            <EcoText type="body" style={{ textAlign: "center", marginTop: 20 }}>
               Nenhum registro encontrado.
-            </Text>
+            </EcoText>
           }
         />
       )}
 
-      <TouchableOpacity
-        style={styles.addButton}
+      {/* Botão flutuante */}
+      <EcoButton
+        title="Criar Novo"
+        color={theme.colors.primary}
+        icon={<Feather name="plus" size={20} color="#FFF" />}
+        style={styles.fab}
         onPress={() => navigation.navigate("Registrar")}
-      >
-        <Text style={styles.addText}>+ Criar Novo</Text>
-      </TouchableOpacity>
+      />
     </View>
   );
 }
@@ -140,61 +145,21 @@ export default function RegistrosScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    padding: theme.spacing.md,
   },
   title: {
-    fontSize: 26,
-    fontWeight: "bold",
-    marginBottom: 12,
+    marginBottom: theme.spacing.md,
+    textAlign: "center",
   },
-  card: {
-    backgroundColor: "#FFF",
-    padding: 14,
-    borderRadius: 10,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "#DDD",
-  },
-  tipo: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  valor: {
-    marginTop: 4,
-    marginBottom: 10,
-  },
-  cardButtons: {
+  row: {
     flexDirection: "row",
     justifyContent: "space-between",
+    marginTop: theme.spacing.sm,
+    gap: theme.spacing.sm,
   },
-  editButton: {
-    backgroundColor: "#3b82f6",
-    padding: 8,
-    borderRadius: 6,
-    width: "48%",
-  },
-  deleteButton: {
-    backgroundColor: "#dc2626",
-    padding: 8,
-    borderRadius: 6,
-    width: "48%",
-  },
-  buttonText: {
-    textAlign: "center",
-    color: "#FFF",
-    fontWeight: "bold",
-  },
-  addButton: {
-    backgroundColor: "#16a34a",
-    padding: 14,
-    borderRadius: 8,
+  fab: {
     position: "absolute",
     bottom: 20,
     right: 20,
-  },
-  addText: {
-    color: "#FFF",
-    fontWeight: "bold",
-    fontSize: 16,
   },
 });
