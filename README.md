@@ -20,17 +20,6 @@ Todas as funcionalidades do app estão integradas diretamente à **API Java Spri
 
 ---
 
-## Vídeo de Apresentação (Pitch + Demonstração)
-
-🔗 **YouTube:** *inserir link do vídeo aqui*  
-Inclui:
-- Visão geral da solução (pitch)  
-- Demonstração do app  
-- Demonstração da API Java  
-- Explicação dos requisitos funcionais  
-
----
-
 ## Deploy da Aplicação
 
 ### **🔗 Firebase App Distribution**
