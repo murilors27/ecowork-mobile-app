@@ -25,7 +25,7 @@ Todas as funcionalidades do app estão integradas diretamente à **API Java Spri
 ### **🔗 Firebase App Distribution**
 O app foi publicado utilizando o Firebase App Distribution, conforme exigido pela sprint:
 
-👉 **https://appdistribution.firebase.google.com/testerapps/1:12522275666:android:1b22da7fdaf2f9ddf0708b/releases/41cbl2kgoa10o?utm_source=firebase-console**
+[[Firebase App Distribution](https://appdistribution.firebase.google.com/testerapps/1:12522275666:android:1b22da7fdaf2f9ddf0708b/releases/41cbl2kgoa10o?utm_source=firebase-console)]
 
 O professor avaliador foi adicionado como testador:  
  *proffernando.abreu@fiap.com.br*
