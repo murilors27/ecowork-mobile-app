@@ -1,5 +1,5 @@
-<h1 align="center">🌱 EcoWork – Aplicativo Mobile</h1>
-<h3 align="center">Global Solution – FIAP 2025 • Development Mobile</h3>
+<h1>🌱 EcoWork – Aplicativo Mobile</h1>
+<h3>Global Solution – FIAP 2025 • Development Mobile</h3>
 
 ---
 
@@ -25,7 +25,7 @@ Todas as funcionalidades do app estão integradas diretamente à **API Java Spri
 ### **🔗 Firebase App Distribution**
 O app foi publicado utilizando o Firebase App Distribution, conforme exigido pela sprint:
 
-👉 **https://appdistribution.firebase.dev/i/1d5c9e3d94e8bd84**
+👉 **https://appdistribution.firebase.google.com/testerapps/1:12522275666:android:1b22da7fdaf2f9ddf0708b/releases/41cbl2kgoa10o?utm_source=firebase-console**
 
 O professor avaliador foi adicionado como testador:  
  *proffernando.abreu@fiap.com.br*
