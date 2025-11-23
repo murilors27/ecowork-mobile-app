@@ -191,7 +191,14 @@ Token Inválido -> Logout automático -> Login
 
 Esse fluxo cumpre todos os requisitos da disciplina e garante **segurança, consistência e rastreabilidade** entre backend e mobile.
 
+---
 
+### Usuário de Teste (para login no app)
+
+Use as credenciais abaixo para acessar o aplicativo:
+
+Email: admin@ecowork.com  
+Senha: admin123
 ---
 
 ## Como Executar o App Localmente
