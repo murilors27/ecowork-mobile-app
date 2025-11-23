@@ -118,6 +118,82 @@ Endereços usados no app:
 
 ---
 
+## Fluxo de Autenticação (Login & Proteção de Rotas)
+
+O EcoWork Mobile utiliza **autenticação JWT integrada com a API Java**, garantindo que apenas usuários autorizados possam acessar as telas internas.
+
+### Login
+O usuário informa **e-mail e senha** na tela inicial.  
+O app envia a requisição:
+
+```
+POST /api/auth/login
+```
+
+Se as credenciais forem válidas, a API retorna um **token JWT**, que é salvo localmente via:
+
+- `AsyncStorage`
+- Configuração automática do Axios (`Authorization: Bearer <token>`)
+
+Após salvar o token e os dados do usuário, o app redireciona automaticamente para a **Home**.
+
+---
+
+### Proteção de Rotas
+Todo o fluxo de navegação é protegido pelo `AuthContext`.
+
+Sempre que o app inicia:
+
+1. Ele tenta carregar o token salvo.
+2. Se o token **não existir** ou **for inválido**, o usuário é redirecionado automaticamente para a tela de **Login**.
+3. Se o token existir, a sessão é restaurada e o app abre direto na **Home**.
+
+Isso também impede que qualquer tela interna seja acessada sem autenticação.
+
+---
+
+### Tentativa de acessar áreas protegidas sem token
+Caso o usuário tente:
+
+- abrir o aplicativo sem token  
+- ou se o token tiver expirado  
+- ou se tentar navegar manualmente para uma rota protegida  
+
+O app **bloqueia o acesso** e força o retorno ao Login.
+
+Em caso de resposta `401 Unauthorized` da API:
+
+- a sessão é automaticamente limpa  
+- o usuário é desconectado  
+- e a navegação volta para o Login
+
+---
+
+### Logout
+Ao fazer logout:
+
+- Token é removido do AsyncStorage  
+- Usuário é removido do contexto  
+- Header Authorization do Axios é apagado  
+- Navegação volta para o Login
+
+Isso garante segurança total e evita qualquer acesso indevido às telas internas.
+
+---
+
+### Fluxo resumido
+```
+Login -> Salva Token -> Abre Home
+Sem Token -> Redireciona para Login
+Token Válido -> Permite navegação
+Token Inválido -> Logout automático -> Login
+```
+
+Esse fluxo cumpre todos os requisitos da disciplina e garante **segurança, consistência e rastreabilidade** entre backend e mobile.
+
+
+---
+
 ## Como Executar o App Localmente
 
 ```sh
